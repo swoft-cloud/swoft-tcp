@@ -3,7 +3,6 @@
 namespace Swoft\Tcp\Protocol;
 
 use Swoft;
-use Swoft\Bean\Annotation\Mapping\Bean;
 use Swoft\Bean\Exception\ContainerException;
 use Swoft\Tcp\Protocol\Contract\PackerInterface;
 use Swoft\Tcp\Protocol\Exception\ProtocolException;
@@ -16,7 +15,6 @@ use function array_merge;
  * Class PackerFactory
  *
  * @since 2.0.3
- * @Bean()
  */
 class Protocol
 {
