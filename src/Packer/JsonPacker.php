@@ -1,7 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Swoft\Tcp\Protocol\Packet;
+namespace Swoft\Tcp\Protocol\Packer;
 
+use ReflectionException;
+use Swoft\Bean\Annotation\Mapping\Bean;
+use Swoft\Bean\Exception\ContainerException;
 use Swoft\Stdlib\Helper\JsonHelper;
 use Swoft\Tcp\Protocol\Contract\PackerInterface;
 use Swoft\Tcp\Protocol\Package;
@@ -10,10 +13,19 @@ use Swoft\Tcp\Protocol\Package;
  * Class JsonPacker
  *
  * @since 2.0.3
+ * @Bean()
  */
 class JsonPacker implements PackerInterface
 {
     public const TYPE = 'json';
+
+    /**
+     * @return string
+     */
+    public static function getType(): string
+    {
+        return self::TYPE;
+    }
 
     /**
      * Encode Package object to string data.
@@ -33,6 +45,8 @@ class JsonPacker implements PackerInterface
      * @param string $data package data
      *
      * @return Package
+     * @throws ReflectionException
+     * @throws ContainerException
      */
     public function decode(string $data): Package
     {
@@ -54,13 +68,5 @@ class JsonPacker implements PackerInterface
         }
 
         return Package::new($cmd, $data, $ext);
-    }
-
-    /**
-     * @return string
-     */
-    public static function getType(): string
-    {
-        return self::TYPE;
     }
 }

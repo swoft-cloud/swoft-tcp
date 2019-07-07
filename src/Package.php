@@ -19,7 +19,7 @@ class Package
      *
      * @var string
      */
-    private $cmd;
+    private $cmd = '';
 
     /**
      * Message body data
@@ -72,13 +72,21 @@ class Package
     /**
      * @return string
      */
-    public function toString(): string
+    public function getDataString(): string
     {
         if (is_scalar($this->data)) {
             return (string)$this->data;
         }
 
         return JsonHelper::encode($this->data);
+    }
+
+    /**
+     * @return string
+     */
+    public function toString(): string
+    {
+        return JsonHelper::encode($this->toArray());
     }
 
     /**
@@ -118,7 +126,6 @@ class Package
 
     /**
      * @param mixed $data
-     *
      */
     public function setData($data): void
     {
@@ -135,7 +142,6 @@ class Package
 
     /**
      * @param array $ext
-     *
      */
     public function setExt(array $ext): void
     {

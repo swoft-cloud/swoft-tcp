@@ -2,16 +2,15 @@
 
 namespace Swoft\Tcp\Protocol;
 
-use ReflectionException;
+use Swoft;
 use Swoft\Bean\Annotation\Mapping\Bean;
 use Swoft\Bean\Exception\ContainerException;
 use Swoft\Tcp\Protocol\Contract\PackerInterface;
 use Swoft\Tcp\Protocol\Exception\ProtocolException;
-use Swoft\Tcp\Protocol\Packet\JsonPacker;
-use Swoft\Tcp\Protocol\Packet\TokenTextPacker;
+use Swoft\Tcp\Protocol\Packer\JsonPacker;
+use Swoft\Tcp\Protocol\Packer\SimpleTokenPacker;
 use function array_keys;
 use function array_merge;
-use function bean;
 
 /**
  * Class PackerFactory
@@ -25,8 +24,8 @@ class Protocol
      * The default packers
      */
     public const DEFAULT_PACKERS = [
-        JsonPacker::TYPE      => JsonPacker::class,
-        TokenTextPacker::TYPE => TokenTextPacker::class,
+        JsonPacker::TYPE        => JsonPacker::class,
+        SimpleTokenPacker::TYPE => SimpleTokenPacker::class,
     ];
 
     /**
@@ -56,32 +55,80 @@ class Protocol
     }
 
     /**
-     * @param string $type
-     * @param string $packerClass
+     * @param Package $package
+     *
+     * @return string
+     * @throws ContainerException
      */
-    public function setPacker(string $type, string $packerClass): void
+    public function encode(Package $package): string
     {
-        $this->packers[$type] = $packerClass;
+        return $this->getPacker()->encode($package);
+    }
+
+    /**
+     * @param string $data
+     *
+     * @return Package
+     * @throws ContainerException
+     */
+    public function decode(string $data): Package
+    {
+        return $this->getPacker()->decode($data);
+    }
+
+    /**
+     * @param Package $package
+     *
+     * @return string
+     * @throws ContainerException
+     */
+    public function packing(Package $package): string
+    {
+        return $this->encode($package);
+    }
+
+    /**
+     * @param string $data
+     *
+     * @return Package
+     * @throws ContainerException
+     */
+    public function unpacking(string $data): Package
+    {
+        return $this->decode($data);
     }
 
     /**
      * @param string $type
      *
      * @return PackerInterface
-     * @throws ReflectionException
      * @throws ContainerException
      */
     public function getPacker(string $type = ''): PackerInterface
+    {
+        $class  = $this->getPackerClass($type ?: $this->type);
+        $packer = Swoft::getSingleton($class);
+
+        if (!$packer instanceof PackerInterface) {
+            throw new ProtocolException("The data packer '{$class}' must be implements PackerInterface");
+        }
+
+        return $packer;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return string
+     */
+    public function getPackerClass(string $type = ''): string
     {
         $type = $type ?: $this->type;
         if (isset($this->packers[$type])) {
             throw new ProtocolException("The data packer is not exist! type: $type");
         }
 
-        $class = $this->packers[$type];
-        $packer = bean($class);
-
-        throw new ProtocolException("The data packer is not exist! type: $type");
+        return $this->packers[$type];
     }
 
     /**
@@ -98,6 +145,15 @@ class Protocol
     public function setType(string $type): void
     {
         $this->type = $type;
+    }
+
+    /**
+     * @param string $type
+     * @param string $packerClass
+     */
+    public function setPacker(string $type, string $packerClass): void
+    {
+        $this->packers[$type] = $packerClass;
     }
 
     /**

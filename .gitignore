@@ -8,7 +8,7 @@ runtime/
 vendor/
 temp/
 *.lock
+*.cache
 .phpintel/
 .env
 .DS_Store
-public/devtool/
